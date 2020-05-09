@@ -62,7 +62,7 @@ class SiswaController extends Controller
             }]);
             return response()->json($siswa, 200);
         } else {
-            return response()->json(['message'=>'Siswa tidak ditemukan'],404);
+            return response()->json(['message'=>'Siswa tidak ditemukan'],400);
         }
     }
 
