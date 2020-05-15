@@ -52,8 +52,6 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $siswa = Siswa::find($request->siswa_id);
-        $user = Auth::user();
-
         if($siswa){
             if($request->saldo_type == "card"){
                 if($request->mutasi_type == "in"){
@@ -70,9 +68,10 @@ class TransaksiController extends Controller
                 }
             }
             $transaksi = new Transaksi;
-            $transaksi->created_by = $user->id;
             $transaksi->nominal = $request->nominal;
             $transaksi->siswa_id = $request->siswa_id;
+            $user = Auth::user();
+            $transaksi->created_by = $user->id;
             $transaksi->mutasi_type = $request->mutasi_type;
             $transaksi->saldo_type = $request->saldo_type;
             $siswa->save();
