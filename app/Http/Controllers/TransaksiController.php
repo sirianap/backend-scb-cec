@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Transaksi;
 use App\Siswa;
+use App\Produk;
+use App\User;
 use App\TransaksiDetail;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 class TransaksiController extends Controller
 {
     /**
@@ -14,9 +16,21 @@ class TransaksiController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $from = date($request->from);
+        $to = date($request->to);
+        if(!$from && !$to){
+            $transaksi = Transaksi::where('mutasi_type','out')->where('saldo_type','card')->orderBy('created_at', 'desc')->with(['siswa','createdBy'])->get();
+            return response()->json($transaksi, 200);
+        }
+        if(!$to){
+            $transaksi = Transaksi::where('mutasi_type','out')->where('saldo_type','card')->whereDate('created_at',$from)->orderBy('created_at', 'desc')->with(['siswa','createdBy'])->get();
+            return response()->json($transaksi, 200);
+        }
+        $transaksi = Transaksi::where('mutasi_type','out')->where('saldo_type','card')->whereBetween('created_at',[$from,$to])->orderBy('created_at', 'desc')->with(['siswa','createdBy'])->get();
+        return response()->json($transaksi, 200);
+
     }
 
     /**
@@ -38,6 +52,8 @@ class TransaksiController extends Controller
     public function store(Request $request)
     {
         $siswa = Siswa::find($request->siswa_id);
+        $user = Auth::user();
+
         if($siswa){
             if($request->saldo_type == "card"){
                 if($request->mutasi_type == "in"){
@@ -54,6 +70,7 @@ class TransaksiController extends Controller
                 }
             }
             $transaksi = new Transaksi;
+            $transaksi->created_by = $user->id;
             $transaksi->nominal = $request->nominal;
             $transaksi->siswa_id = $request->siswa_id;
             $transaksi->mutasi_type = $request->mutasi_type;
@@ -69,7 +86,7 @@ class TransaksiController extends Controller
     }
 
     public function storeDetail(Request $request)
-    {
+    {   
         $siswa = Siswa::find($request->id);
         $harga_total = 0;
         foreach ($request->detail as $item){
@@ -79,6 +96,8 @@ class TransaksiController extends Controller
             return response()->json(['message'=>'Saldo tidak mencukupi'], 500);
         }
         $transaksi = new Transaksi;
+        $user = Auth::user();
+        $transaksi->created_by = $user->id;
         $transaksi->siswa_id = $request->id;
         $transaksi->mutasi_type = 'out';
         $transaksi->saldo_type = 'card';
@@ -87,6 +106,9 @@ class TransaksiController extends Controller
         foreach ($request->detail as $item) {
             // return response()->json($item, 200);
             $detail = new TransaksiDetail;
+            $produk = Produk::find($item['id']);
+            $produk->jumlah -= $item['jumlah_beli'];
+            $produk->save();
             $detail->transaksi_id = $transaksi->id;
             $detail->produk_id = $item['id'];
             $detail->jumlah = $item['jumlah_beli'];
@@ -95,6 +117,7 @@ class TransaksiController extends Controller
             $detail->save();
             $transaksi->nominal += $detail['harga_total'];
         }
+        $transaksi->created_by = Auth::user()->id;
         $transaksi->save();
         $siswa->saldo_digitcard -= $transaksi->nominal;
         $siswa->save();
@@ -109,7 +132,8 @@ class TransaksiController extends Controller
      */
     public function show(Transaksi $transaksi)
     {
-        //
+        $transaksi->load('detail.produk','siswa','createdBy');
+        return response()->json($transaksi, 200);
     }
 
     /**

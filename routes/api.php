@@ -23,14 +23,14 @@ Route::post('register', 'UserController@register');
 Route::group(['middleware' => 'auth:api'], function(){
     Route::post('getuser', 'UserController@details');
     Route::post('logout', 'UserController@logout');
+    Route::post('transaksi/detail','TransaksiController@storeDetail');
+    Route::resource('transaksi', 'TransaksiController');
 });
 
 Route::get('siswa/{nis}','SiswaController@show');
 Route::resource('siswa', 'SiswaController');
 
 
-Route::post('transaksi/detail','TransaksiController@storeDetail');
-Route::resource('transaksi', 'TransaksiController');
 
 Route::get('produk/{produk:nomor_produk}','ProdukController@show');
 Route::resource('produk', 'ProdukController');

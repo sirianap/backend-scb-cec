@@ -86,7 +86,10 @@ class SiswaController extends Controller
      */
     public function update(Request $request, Siswa $siswa)
     {
-        //
+        $siswa->nama= $request->nama;
+        $siswa->nis= $request->nis;
+        $siswa->save();
+        return response()->json( $siswa, 200);
     }
 
     /**
