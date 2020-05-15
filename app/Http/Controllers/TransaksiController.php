@@ -72,7 +72,7 @@ class TransaksiController extends Controller
             $transaksi->siswa_id = $request->siswa_id;
             $user = Auth::user();
             // error disini
-            $transaksi->created_by = $user->id;
+            // $transaksi->created_by = $user->id;
             $transaksi->mutasi_type = $request->mutasi_type;
             $transaksi->saldo_type = $request->saldo_type;
             $siswa->save();
