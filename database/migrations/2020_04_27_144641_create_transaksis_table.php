@@ -16,6 +16,7 @@ class CreateTransaksisTable extends Migration
         Schema::create('transaksi', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('nominal');
+            $table->bigInteger('keuntungan')->nullable();
             $table->enum('mutasi_type',['in','out']);
             $table->enum('saldo_type',['total','card']);
             $table->json('created_by')->nullable();

@@ -32,6 +32,22 @@ class TransaksiController extends Controller
         return response()->json($transaksi, 200);
 
     }
+    public function transaksi(Request $request)
+    {
+        $from = date($request->from);
+        $to = date($request->to);
+        if(!$from && !$to){
+            $transaksi = Transaksi::where('mutasi_type','in')->orderBy('created_at', 'desc')->with(['siswa','createdBy'])->get();
+            return response()->json($transaksi, 200);
+        }
+        if(!$to){
+            $transaksi = Transaksi::where('mutasi_type','in')->whereDate('created_at',$from)->orderBy('created_at', 'desc')->with(['siswa','createdBy'])->get();
+            return response()->json($transaksi, 200);
+        }
+        $transaksi = Transaksi::where('mutasi_type','in')->whereBetween('created_at',[$from,$to])->orderBy('created_at', 'desc')->with(['siswa','createdBy'])->get();
+        return response()->json($transaksi, 200);
+
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -69,10 +85,11 @@ class TransaksiController extends Controller
             }
             $transaksi = new Transaksi;
             $transaksi->nominal = $request->nominal;
+            // $transaksi->keuntungan = $request->nominal;
             $transaksi->siswa_id = $request->siswa_id;
             $user = Auth::user();
             // error disini
-            // $transaksi->created_by = $user->id;
+            $transaksi->created_by = $user->id;
             $transaksi->mutasi_type = $request->mutasi_type;
             $transaksi->saldo_type = $request->saldo_type;
             $siswa->save();
@@ -102,6 +119,7 @@ class TransaksiController extends Controller
         $transaksi->mutasi_type = 'out';
         $transaksi->saldo_type = 'card';
         $transaksi->nominal = 0;
+        $transaksi->keuntungan = 0;
         $transaksi->save();
         foreach ($request->detail as $item) {
             // return response()->json($item, 200);
@@ -115,6 +133,7 @@ class TransaksiController extends Controller
             $detail->harga_satuan = $item['harga_jual'];
             $detail->harga_total = $item['jumlah_beli'] * $item['harga_jual'];
             $detail->save();
+            $transaksi->keuntungan += ($item['harga_jual'] - $item['harga_beli']) * $item['jumlah_beli'];
             $transaksi->nominal += $detail['harga_total'];
         }
         $transaksi->created_by = Auth::user()->id;

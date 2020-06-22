@@ -21,8 +21,11 @@ Route::post('login', 'UserController@login');
 Route::post('register', 'UserController@register');
  
 Route::group(['middleware' => 'auth:api'], function(){
+    Route::get('users','UserController@index');
+    Route::post('user/{user}','UserController@update');
     Route::post('getuser', 'UserController@details');
     Route::post('logout', 'UserController@logout');
+    Route::get('transaksi2','TransaksiController@transaksi');
     Route::post('transaksi/detail','TransaksiController@storeDetail');
     Route::resource('transaksi', 'TransaksiController');
 });

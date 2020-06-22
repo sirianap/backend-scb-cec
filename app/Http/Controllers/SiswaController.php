@@ -29,7 +29,7 @@ class SiswaController extends Controller
         $siswa->nama = $request->nama;
         $siswa->nis = $request->nis;
         $siswa->save();
-        return response()->json($siswa, 200,);
+        return response()->json($siswa, 200);
     }
 
     /**
