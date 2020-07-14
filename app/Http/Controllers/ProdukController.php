@@ -52,9 +52,11 @@ class ProdukController extends Controller
      * @param  \App\Produk  $produk
      * @return \Illuminate\Http\Response
      */
-    public function show(Produk $produk)
+    public function show($produk)
     {
-        return response()->json($produk, 200);
+        if($data = Produk::where('nomor',$produk)->first()){
+            return response()->json($data, 200);
+        }
     }
 
     /**

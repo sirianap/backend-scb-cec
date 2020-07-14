@@ -35,5 +35,5 @@ Route::resource('siswa', 'SiswaController');
 
 
 
-Route::get('produk/{produk:nomor_produk}','ProdukController@show');
+Route::get('produk/{$produk}','ProdukController@show');
 Route::resource('produk', 'ProdukController');
